@@ -1,8 +1,8 @@
 import org.junit.jupiter.api.Test;
-import ukma.edu.ua.InvalidMessageException;
-import ukma.edu.ua.InvalidPacketException;
-import ukma.edu.ua.Message;
-import ukma.edu.ua.Packet;
+import ukma.edu.ua.model.InvalidMessageException;
+import ukma.edu.ua.model.InvalidPacketException;
+import ukma.edu.ua.model.Message;
+import ukma.edu.ua.model.Packet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,7 +19,7 @@ class PacketTest {
         Packet packet = new Packet(source, packetId, message);
 
         byte[] serialized = packet.serialize();
-        Packet deserializedPacket = new Packet(serialized);
+        Packet deserializedPacket = Packet.fromPacketData(serialized);
 
         assertEquals(source, deserializedPacket.getSource());
         assertEquals(packetId, deserializedPacket.getPacketId());
@@ -33,12 +33,12 @@ class PacketTest {
     @Test
     void testInvalidPacketLength() {
         byte[] invalidPacketData = {0x13, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        assertThrows(InvalidPacketException.class, () -> new Packet(invalidPacketData));
+        assertThrows(InvalidPacketException.class, () -> Packet.fromPacketData(invalidPacketData));
     }
 
     @Test
     void testInvalidPacketMagic() {
         byte[] invalidPacketData = {0x12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-        assertThrows(InvalidPacketException.class, () -> new Packet(invalidPacketData));
+        assertThrows(InvalidPacketException.class, () -> Packet.fromPacketData(invalidPacketData));
     }
 }

@@ -1,4 +1,4 @@
-package ukma.edu.ua;
+package ukma.edu.ua.crypto;
 
 public class CRC16 {
     private CRC16() {

@@ -1,4 +1,6 @@
-package ukma.edu.ua;
+package ukma.edu.ua.model;
+
+import ukma.edu.ua.crypto.CRC16;
 
 import java.nio.ByteBuffer;
 
@@ -17,37 +19,31 @@ public class Packet {
      * Constructs a Packet object by parsing the provided packet data.
      *
      * @param packetData the packet data to parse
-     * @throws InvalidPacketException if the packet data is invalid
+     * @throws InvalidPacketException  if the packet data is invalid
+     * @throws InvalidMessageException if the message data is invalid
      */
-    public Packet(byte[] packetData) throws InvalidPacketException, InvalidMessageException {
+    public static Packet fromPacketData(byte[] packetData) throws InvalidPacketException, InvalidMessageException {
         if (packetData.length < 18) {
             throw new InvalidPacketException("Invalid packet length");
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(packetData);
-        this.magic = buffer.get();
+
+        byte magic = buffer.get();
         if (magic != PACKET_MAGIC) {
             throw new InvalidPacketException("Invalid packet magic");
         }
 
-        this.source = buffer.get();
-        this.packetId = buffer.getLong();
-        this.dataLength = buffer.getInt();
-        this.headerChecksum = buffer.getShort();
+        byte source = buffer.get();
+        long packetId = buffer.getLong();
+        int dataLength = buffer.getInt();
+        short headerChecksum = buffer.getShort();
 
         byte[] messageData = new byte[dataLength];
         buffer.get(messageData);
-        this.message = new Message(messageData);
+        Message message = new Message(messageData);
 
-        this.dataChecksum = buffer.getShort();
-
-        if (!verifyHeaderChecksum()) {
-            throw new InvalidPacketException("Invalid header checksum");
-        }
-
-        if (!verifyDataChecksum()) {
-            throw new InvalidPacketException("Invalid data checksum");
-        }
+        return new Packet(source, packetId, message);
     }
 
     /**

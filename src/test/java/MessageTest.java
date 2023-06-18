@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ukma.edu.ua.InvalidMessageException;
-import ukma.edu.ua.Message;
+import ukma.edu.ua.model.InvalidMessageException;
+import ukma.edu.ua.model.Message;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 

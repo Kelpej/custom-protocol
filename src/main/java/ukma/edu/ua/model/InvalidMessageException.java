@@ -1,4 +1,4 @@
-package ukma.edu.ua;
+package ukma.edu.ua.model;
 
 /**
  * Exception class for representing an invalid message.

@@ -1,4 +1,6 @@
-package ukma.edu.ua;
+package ukma.edu.ua.model;
+
+import ukma.edu.ua.crypto.CRC16;
 
 import java.nio.ByteBuffer;
 
