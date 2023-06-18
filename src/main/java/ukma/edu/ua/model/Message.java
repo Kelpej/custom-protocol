@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 public class Message {
     private static final int DATA_OFFSET = 8;
-    private final int commandCode;
+    private final CommandType commandType;
     private final int userId;
     private final byte[] encryptedData;
     private final byte[] decryptedData;
@@ -23,7 +23,7 @@ public class Message {
      * @param plainData   the message data
      */
     public Message(int commandCode, int userId, byte[] plainData) {
-        this.commandCode = commandCode;
+        this.commandType = CommandType.values()[commandCode];
         this.userId = userId;
         this.decryptedData = plainData;
         this.encryptedData = AES.encrypt(plainData);
@@ -43,7 +43,7 @@ public class Message {
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(messageData);
-        this.commandCode = buffer.getInt();
+        this.commandType = CommandType.values()[buffer.getInt()];
         this.userId = buffer.getInt();
 
         byte[] data = new byte[messageData.length - DATA_OFFSET];
@@ -63,7 +63,7 @@ public class Message {
      */
     public byte[] serialize() {
         ByteBuffer buffer = ByteBuffer.allocate(DATA_OFFSET + encryptedData.length);
-        buffer.putInt(commandCode);
+        buffer.putInt(commandType.ordinal());
         buffer.putInt(userId);
         buffer.put(encryptedData);
 
@@ -72,7 +72,7 @@ public class Message {
 
     private short calculateChecksum() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        byteBuffer.putInt(commandCode);
+        byteBuffer.putInt(commandType.ordinal());
         byteBuffer.putInt(userId);
 
         return (short) CRC16.apply(byteBuffer.array());
@@ -92,8 +92,8 @@ public class Message {
      *
      * @return the command code
      */
-    public int getCommandCode() {
-        return this.commandCode;
+    public CommandType getCommandType() {
+        return this.commandType;
     }
 
     /**
