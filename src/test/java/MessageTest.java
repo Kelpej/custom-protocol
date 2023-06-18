@@ -17,7 +17,7 @@ class MessageTest {
 
         Assertions.assertEquals(1, deserializedMessage.getCommandCode());
         Assertions.assertEquals(2, deserializedMessage.getUserId());
-        assertArrayEquals(messageData, deserializedMessage.getData());
+        assertArrayEquals(messageData, deserializedMessage.getDecryptedData());
     }
 
     @Test

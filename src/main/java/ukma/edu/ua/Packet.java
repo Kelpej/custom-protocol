@@ -37,6 +37,7 @@ public class Packet {
 
         byte[] messageData = new byte[dataLength];
         buffer.get(messageData);
+
         this.message = new Message(messageData);
 
         this.dataChecksum = buffer.getShort();
@@ -62,7 +63,7 @@ public class Packet {
         this.source = source;
         this.packetId = packetId;
         this.message = message;
-        this.dataLength = message.calculateLength();
+        this.dataLength = message.dataLength();
         this.headerChecksum = calculateHeaderChecksum();
         this.dataChecksum = message.getChecksum();
     }
@@ -73,7 +74,9 @@ public class Packet {
      * @return the serialized byte array representing the Packet object
      */
     public byte[] serialize() {
-        int packetLength = 18 + dataLength;
+        byte[] serializedMessage = message.serialize();
+
+        int packetLength = 18 + serializedMessage.length;
         ByteBuffer buffer = ByteBuffer.allocate(packetLength);
 
         buffer.put(magic);
@@ -81,7 +84,7 @@ public class Packet {
         buffer.putLong(packetId);
         buffer.putInt(dataLength);
         buffer.putShort(headerChecksum);
-        buffer.put(message.serialize());
+        buffer.put(serializedMessage);
         buffer.putShort(dataChecksum);
 
         return buffer.array();
