@@ -8,8 +8,10 @@ public class Message {
     private static final int DATA_OFFSET = 8;
     private final int commandCode;
     private final int userId;
-    private final byte[] data;
+    private final byte[] encryptedData;
+    private final byte[] decryptedData;
 
+    private final int dataLength;
     private final short checksum;
 
     /**
@@ -17,12 +19,14 @@ public class Message {
      *
      * @param commandCode the command code of the message
      * @param userId      the user ID of the message
-     * @param data        the message data
+     * @param plainData   the message data
      */
-    public Message(int commandCode, int userId, byte[] data) {
+    public Message(int commandCode, int userId, byte[] plainData) {
         this.commandCode = commandCode;
         this.userId = userId;
-        this.data = data;
+        this.decryptedData = plainData;
+        this.encryptedData = AES.encrypt(plainData);
+        this.dataLength = DATA_OFFSET + encryptedData.length;
         this.checksum = calculateChecksum();
     }
 
@@ -38,11 +42,15 @@ public class Message {
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(messageData);
-        commandCode = buffer.getInt();
-        userId = buffer.getInt();
+        this.commandCode = buffer.getInt();
+        this.userId = buffer.getInt();
 
-        data = new byte[messageData.length - DATA_OFFSET];
+        byte[] data = new byte[messageData.length - DATA_OFFSET];
         buffer.get(data);
+
+        this.dataLength = DATA_OFFSET + data.length;
+        this.encryptedData = data;
+        this.decryptedData = AES.decrypt(data);
 
         this.checksum = calculateChecksum();
     }
@@ -53,10 +61,10 @@ public class Message {
      * @return the serialized byte array representing the Message object
      */
     public byte[] serialize() {
-        ByteBuffer buffer = ByteBuffer.allocate(DATA_OFFSET + data.length);
+        ByteBuffer buffer = ByteBuffer.allocate(DATA_OFFSET + encryptedData.length);
         buffer.putInt(commandCode);
         buffer.putInt(userId);
-        buffer.put(data);
+        buffer.put(encryptedData);
 
         return buffer.array();
     }
@@ -74,8 +82,8 @@ public class Message {
      *
      * @return the length of the message
      */
-    public int calculateLength() {
-        return DATA_OFFSET + data.length;
+    public int dataLength() {
+        return dataLength;
     }
 
     /**
@@ -101,8 +109,8 @@ public class Message {
      *
      * @return the data
      */
-    public byte[] getData() {
-        return this.data;
+    public byte[] getEncryptedData() {
+        return this.encryptedData;
     }
 
     /**
@@ -112,5 +120,9 @@ public class Message {
      */
     public short getChecksum() {
         return checksum;
+    }
+
+    public byte[] getDecryptedData() {
+        return decryptedData;
     }
 }

@@ -13,9 +13,9 @@ class PacketTest {
         long packetId = 12345;
         int commandCode = 100;
         int userId = 456;
-        byte[] data = {1, 2, 3, 4, 5};
+        byte[] messageData = {1, 2, 3, 4, 5};
 
-        Message message = new Message(commandCode, userId, data);
+        Message message = new Message(commandCode, userId, messageData);
         Packet packet = new Packet(source, packetId, message);
 
         byte[] serialized = packet.serialize();
@@ -27,7 +27,7 @@ class PacketTest {
         Message deserializedMessage = deserializedPacket.getMessage();
         assertEquals(commandCode, deserializedMessage.getCommandCode());
         assertEquals(userId, deserializedMessage.getUserId());
-        assertArrayEquals(data, deserializedMessage.getData());
+        assertArrayEquals(messageData, deserializedMessage.getDecryptedData());
     }
 
     @Test
