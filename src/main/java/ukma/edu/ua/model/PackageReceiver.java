@@ -1,6 +1,6 @@
 package ukma.edu.ua.model;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
-public interface PackageReceiver extends Consumer<byte[]> {
+public interface PackageReceiver extends BiConsumer<byte[], ResponseSender> {
 }

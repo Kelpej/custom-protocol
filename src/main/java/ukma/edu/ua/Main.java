@@ -3,27 +3,54 @@ package ukma.edu.ua;
 import ukma.edu.ua.impl.ConcurrentReceiver;
 import ukma.edu.ua.model.Message;
 import ukma.edu.ua.model.Packet;
+import ukma.edu.ua.network.ClientTCP;
+import ukma.edu.ua.network.ServerTCP;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Main {
-    public static void main(String[] args) {
+    private static final ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
+
+    public static void main(String[] args) throws InterruptedException {
         final ConcurrentReceiver receiver = new ConcurrentReceiver();
 
-        Packet packet1 = new Packet((byte) 0, 0,
-                new Message(200, 1, "Client".getBytes(StandardCharsets.UTF_8)));
+        serverExecutor.submit(() -> {
+            final ServerTCP server = new ServerTCP();
+            try {
+                server.receivePackages(receiver);
+            } catch (IOException e) {
+                System.out.println("Server failed");
+                throw new RuntimeException(e);
+            }
+        });
 
-        Packet packet2 = new Packet((byte) 0, 1,
-                new Message(200, 1, "Server".getBytes(StandardCharsets.UTF_8)));
+        ClientTCP client1 = new ClientTCP();
+        System.out.println("Client is created");
+        ClientTCP client2 = new ClientTCP();
+        ClientTCP client3 = new ClientTCP();
 
-        Packet packet3 = new Packet((byte) 0, 2,
-                new Message(200, 1, "Architecture".getBytes(StandardCharsets.UTF_8)));
+        sendMessages(client1);
+        sendMessages(client2);
+        sendMessages(client3);
+    }
 
-        byte[] invalidPacket = new byte[]{0x12};
+    private static void sendMessages(ClientTCP client) {
+        Message message1 = new Message(1, 1, "Client".getBytes(UTF_8));
+        Packet packet1 = new Packet((byte) 1, 1, message1);
 
-        receiver.accept(packet1.serialize());
-        receiver.accept(packet2.serialize());
-        receiver.accept(packet3.serialize());
-        receiver.accept(invalidPacket);
+        Message message2 = new Message(1, 1, "Server".getBytes(UTF_8));
+        Packet packet2 = new Packet((byte) 1, 1, message2);
+
+
+        Message message3 = new Message(1, 1, "Architecture".getBytes(UTF_8));
+        Packet packet3 = new Packet((byte) 1, 1, message3);
+
+        client.send(packet1);
+        client.send(packet2);
+        client.send(packet3);
     }
 }
