@@ -1,6 +1,6 @@
 package ukma.edu.ua.network;
 
-import ukma.edu.ua.model.PackageReceiver;
+import ukma.edu.ua.model.PacketReceiver;
 import ukma.edu.ua.model.ResponseSender;
 
 import java.io.DataInputStream;
@@ -11,6 +11,7 @@ import java.net.Socket;
 
 public class ServerTCP {
     private final ServerSocket socket;
+    private volatile boolean pending = true;
 
     public ServerTCP() {
         try {
@@ -21,8 +22,8 @@ public class ServerTCP {
         }
     }
 
-    public void receivePackages(PackageReceiver receiver) throws IOException {
-        while (true) {
+    public void receivePackets(PacketReceiver receiver) throws IOException {
+        while (pending) {
             Socket clientSocket = socket.accept();
             System.out.println("Accepted connection from: " + clientSocket.getInetAddress().toString());
 
@@ -46,6 +47,18 @@ public class ServerTCP {
             };
 
             receiver.accept(packetData, responseSender);
+        }
+    }
+
+    public void shutdown() {
+        System.out.println("Server is shut down");
+
+        this.pending = false;
+
+        try {
+            this.socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

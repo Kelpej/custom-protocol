@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class ConcurrentReceiver implements PackageReceiver {
+public class ConcurrentReceiver implements PacketReceiver {
     private static final ExecutorService executorService;
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();

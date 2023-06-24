@@ -12,6 +12,7 @@ import java.net.Socket;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ClientTCP {
+
     public void send(Packet packet) {
         try (Socket socket = new Socket("localhost", 8080)) {
             System.out.println("Client is connected");
