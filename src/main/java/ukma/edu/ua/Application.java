@@ -1,13 +1,10 @@
 package ukma.edu.ua;
 
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import lombok.RequiredArgsConstructor;
-import ukma.edu.ua.impl.CommandProcessorImpl;
-import ukma.edu.ua.impl.ConcurrentReceiver;
-import ukma.edu.ua.impl.MessageHandlerImpl;
-import ukma.edu.ua.model.CommandProcessor;
-import ukma.edu.ua.model.MessageHandler;
-import ukma.edu.ua.model.PacketReceiver;
-import ukma.edu.ua.network.ServerTCP;
+import ukma.edu.ua.network.http.JwtFilter;
+import ukma.edu.ua.network.http.handlers.ProductRequestHandler;
 import ukma.edu.ua.persistent.Hibernate;
 import ukma.edu.ua.persistent.impl.GroupDao;
 import ukma.edu.ua.persistent.impl.ManufacturerDao;
@@ -16,27 +13,12 @@ import ukma.edu.ua.service.GroupService;
 import ukma.edu.ua.service.ProductService;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.net.InetSocketAddress;
 
 @RequiredArgsConstructor
 public class Application {
-    private static final ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
 
-    private final ServerTCP server;
-    private final PacketReceiver packetReceiver;
-
-    private void start() {
-        serverExecutor.submit(() -> {
-            try {
-                server.receivePackets(packetReceiver);
-            } catch (IOException e) {
-                throw new RuntimeException("Server failed", e);
-            }
-        });
-    }
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         ProductDao productDao = new ProductDao(Hibernate.getSessionFactory());
         GroupDao groupDao = new GroupDao(Hibernate.getSessionFactory());
         ManufacturerDao manufacturerDao = new ManufacturerDao(Hibernate.getSessionFactory());
@@ -44,12 +26,12 @@ public class Application {
         ProductService productService = new ProductService(productDao, groupDao);
         GroupService groupService = new GroupService(groupDao);
 
-        MessageHandler messageHandler = new MessageHandlerImpl();
-        CommandProcessor commandProcessor = new CommandProcessorImpl(productService, groupService);
-        PacketReceiver concurrentReceiver = new ConcurrentReceiver(messageHandler, commandProcessor);
+        HttpServer http = HttpServer.create(new InetSocketAddress(8000), 0);
+        http.createContext("/api/product", authenticated(ProductRequestHandler.create(productService)));
+        http.start();
+    }
 
-        ServerTCP server = new ServerTCP();
-
-        new Application(server, concurrentReceiver).start();
+    private static HttpHandler authenticated(HttpHandler handler) {
+        return new JwtFilter(handler);
     }
 }

@@ -5,6 +5,7 @@ import ukma.edu.ua.model.entity.Group;
 import ukma.edu.ua.model.entity.Product;
 import ukma.edu.ua.persistent.impl.GroupDao;
 import ukma.edu.ua.persistent.impl.ProductDao;
+import ukma.edu.ua.service.exceptions.NoEntityFoundException;
 
 import java.util.Optional;
 
@@ -23,6 +24,21 @@ public class ProductService {
 
         productDao.save(updated);
         return updated;
+    }
+
+    public Product updateProduct(Product updated) {
+        productDao.update(updated);
+        return updated;
+    }
+
+    public Product getById(long productId) throws NoEntityFoundException {
+        Optional<Product> byId = productDao.findById(productId);
+
+        if (byId.isEmpty()) {
+            throw new NoEntityFoundException(productId);
+        }
+
+        return byId.get();
     }
 
     public Product decreaseQuantity(long productId, int quantity) {
@@ -63,5 +79,13 @@ public class ProductService {
 
         productDao.save(updated);
         return updated;
+    }
+
+    public void saveProduct(Product product) {
+        productDao.save(product);
+    }
+
+    public void deleteProduct(Product product) {
+        productDao.delete(product);
     }
 }
