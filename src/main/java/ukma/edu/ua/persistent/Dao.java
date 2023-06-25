@@ -1,8 +1,17 @@
 package ukma.edu.ua.persistent;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public abstract class Dao<T> {
     private final SessionFactory sessionFactory;
@@ -37,10 +46,32 @@ public abstract class Dao<T> {
         session.close();
     }
 
-    public T getById(int id) {
+    public Optional<T> findById(long id) {
         Session session = sessionFactory.openSession();
         T entity = session.get(this.entity, id);
         session.close();
-        return entity;
+        return Optional.ofNullable(entity);
+    }
+
+    public List<T> listByCriteria(Map<String, Object> criteriaMap) {
+        Session session = sessionFactory.openSession();
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(entity);
+        Root<T> root = criteriaQuery.from(entity);
+
+        Predicate[] predicates = new Predicate[criteriaMap.size()];
+        int i = 0;
+        for (Map.Entry<String, Object> entry : criteriaMap.entrySet()) {
+            predicates[i] = criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
+            i++;
+        }
+
+        criteriaQuery.select(root).where(predicates);
+        Query<T> query = session.createQuery(criteriaQuery);
+
+        List<T> resultList = query.getResultList();
+        session.close();
+
+        return resultList;
     }
 }

@@ -1,5 +1,7 @@
 package ukma.edu.ua.network;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ukma.edu.ua.model.PacketReceiver;
 
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 public class ServerUDP {
+    private static final Logger logger = LoggerFactory.getLogger(ServerUDP.class);
     private final DatagramSocket socket;
     private static final int MAX_PACKET_SIZE = 65535;
 
@@ -20,7 +23,7 @@ public class ServerUDP {
     }
 
     public void receivePackets(PacketReceiver receiver) throws IOException {
-        System.out.println("UDP server is started.");
+        logger.info("UDP server is started.");
 
         byte[] receiveData = new byte[MAX_PACKET_SIZE];
 
@@ -29,7 +32,7 @@ public class ServerUDP {
             socket.receive(receivePacket);
 
             byte[] data = receivePacket.getData();
-            System.out.println("Accepted message, length: " + data.length);
+            logger.debug("Accepted message, length: " + data.length);
 
             receiver.accept(data, packet -> {
                 byte[] responseData = packet.serialize();

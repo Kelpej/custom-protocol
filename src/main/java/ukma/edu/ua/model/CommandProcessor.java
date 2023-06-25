@@ -4,5 +4,5 @@ import ukma.edu.ua.model.command.Command;
 
 import java.util.function.Function;
 
-public interface MessageHandler extends Function<Message, Command> {
+public interface CommandProcessor extends Function<Command, Object> {
 }

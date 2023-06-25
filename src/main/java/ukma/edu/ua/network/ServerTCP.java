@@ -1,5 +1,7 @@
 package ukma.edu.ua.network;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ukma.edu.ua.model.PacketReceiver;
 import ukma.edu.ua.model.ResponseSender;
 
@@ -10,13 +12,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ServerTCP {
+    private static final Logger logger = LoggerFactory.getLogger(ServerTCP.class);
     private final ServerSocket socket;
     private volatile boolean pending = true;
 
     public ServerTCP() {
         try {
             this.socket = new ServerSocket(8080);
-            System.out.println("Server is started");
+            logger.info("Server is started");
         } catch (IOException e) {
             throw new RuntimeException("Failed to instantiate TCP server", e);
         }
@@ -25,7 +28,7 @@ public class ServerTCP {
     public void receivePackets(PacketReceiver receiver) throws IOException {
         while (pending) {
             Socket clientSocket = socket.accept();
-            System.out.println("Accepted connection from: " + clientSocket.getInetAddress().toString());
+            logger.debug("Accepted connection from: " + clientSocket.getInetAddress().toString());
 
             DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream());
 
@@ -33,7 +36,7 @@ public class ServerTCP {
             byte[] packetData = new byte[packetSize];
 
             int bytesRead = dataInputStream.read(packetData, 0, packetSize);
-            System.out.println("Received packet has length " + bytesRead);
+            logger.debug("Received packet has length " + bytesRead);
 
             ResponseSender responseSender = packet -> {
                 try {
@@ -51,7 +54,7 @@ public class ServerTCP {
     }
 
     public void shutdown() {
-        System.out.println("Server is shut down");
+        logger.debug("Server is shut down");
 
         this.pending = false;
 

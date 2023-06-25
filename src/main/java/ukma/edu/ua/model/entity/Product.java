@@ -1,9 +1,15 @@
 package ukma.edu.ua.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "product")
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,6 +20,8 @@ public class Product {
     private String description;
     @ManyToOne
     private Manufacturer manufacturer;
+    @ManyToOne
+    private Group group;
     private int quantity;
     private double price;
 

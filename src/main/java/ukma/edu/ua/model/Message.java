@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 public class Message {
     private static final int DATA_OFFSET = 8;
-    private final CommandType commandType;
+    private final int commandCode;
     private final int userId;
     private final byte[] encryptedData;
     private final byte[] decryptedData;
@@ -23,7 +23,16 @@ public class Message {
      * @param plainData   the message data
      */
     public Message(int commandCode, int userId, byte[] plainData) {
-        this.commandType = CommandType.values()[commandCode];
+        this.commandCode = commandCode;
+        this.userId = userId;
+        this.decryptedData = plainData;
+        this.encryptedData = AES.encrypt(plainData);
+        this.dataLength = DATA_OFFSET + encryptedData.length;
+        this.checksum = calculateChecksum();
+    }
+
+    public Message(CommandType type, int userId, byte[] plainData) {
+        this.commandCode = type.ordinal();
         this.userId = userId;
         this.decryptedData = plainData;
         this.encryptedData = AES.encrypt(plainData);
@@ -43,7 +52,7 @@ public class Message {
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(messageData);
-        this.commandType = CommandType.values()[buffer.getInt()];
+        this.commandCode = buffer.getInt();
         this.userId = buffer.getInt();
 
         byte[] data = new byte[messageData.length - DATA_OFFSET];
@@ -63,7 +72,7 @@ public class Message {
      */
     public byte[] serialize() {
         ByteBuffer buffer = ByteBuffer.allocate(DATA_OFFSET + encryptedData.length);
-        buffer.putInt(commandType.ordinal());
+        buffer.putInt(commandCode);
         buffer.putInt(userId);
         buffer.put(encryptedData);
 
@@ -72,7 +81,7 @@ public class Message {
 
     private short calculateChecksum() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        byteBuffer.putInt(commandType.ordinal());
+        byteBuffer.putInt(commandCode);
         byteBuffer.putInt(userId);
 
         return (short) CRC16.apply(byteBuffer.array());
@@ -93,7 +102,7 @@ public class Message {
      * @return the command code
      */
     public CommandType getCommandType() {
-        return this.commandType;
+        return CommandType.values()[commandCode];
     }
 
     /**
