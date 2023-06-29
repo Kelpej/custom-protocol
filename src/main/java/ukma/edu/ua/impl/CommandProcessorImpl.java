@@ -16,7 +16,7 @@ public class CommandProcessorImpl implements CommandProcessor {
         return switch (command) {
             case IncreaseProductQuantityCommand com -> productService.increaseQuantity(com.id(), com.quantity());
             case DecreaseProductQuantityCommand com -> productService.decreaseQuantity(com.id(), com.quantity());
-            case AddGroupCommand com -> groupService.addGroup(com.name(), com.description());
+//            case AddGroupCommand com -> groupService.addGroup(com.name(), com.description());
             case AddGroupMemberCommand com -> productService.addProductToGroup(com.productId(), com.groupId());
             case GetProductQuantityCommand com -> productService.getProductQuantity(com.id());
             case SetProductPriceCommand com -> productService.setProductPrice(com.id(), com.price());

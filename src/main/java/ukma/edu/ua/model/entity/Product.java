@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "product")
+@Table(name = "product", uniqueConstraints = @UniqueConstraint(columnNames = {"name"}))
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,8 +21,10 @@ public class Product {
     private String name;
     private String description;
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Manufacturer manufacturer;
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Group group;
     private int quantity;
     private double price;

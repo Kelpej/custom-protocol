@@ -53,6 +53,21 @@ public abstract class Dao<T> {
         return Optional.ofNullable(entity);
     }
 
+    public List<T> getAll() {
+        Session session = sessionFactory.openSession();
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(entity);
+        Root<T> root = criteriaQuery.from(entity);
+
+        criteriaQuery.select(root);
+        Query<T> query = session.createQuery(criteriaQuery);
+
+        List<T> resultList = query.getResultList();
+        session.close();
+
+        return resultList;
+    }
+
     public List<T> listByCriteria(Map<String, Object> criteriaMap) {
         Session session = sessionFactory.openSession();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();

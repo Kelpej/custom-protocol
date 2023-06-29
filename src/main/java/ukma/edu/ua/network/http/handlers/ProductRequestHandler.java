@@ -131,7 +131,7 @@ public class ProductRequestHandler {
 
             try {
                 Product product = productService.getById(id);
-                productService.deleteProduct(product);
+                productService.deleteProduct(product.id());
 
                 exchange.sendResponseHeaders(204, 0);
             } catch (NoEntityFoundException e) {

@@ -7,6 +7,7 @@ import ukma.edu.ua.persistent.impl.GroupDao;
 import ukma.edu.ua.persistent.impl.ProductDao;
 import ukma.edu.ua.service.exceptions.NoEntityFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -24,6 +25,10 @@ public class ProductService {
 
         productDao.save(updated);
         return updated;
+    }
+
+    public List<Product> getAll() {
+        return productDao.getAll();
     }
 
     public Product updateProduct(Product updated) {
@@ -85,7 +90,13 @@ public class ProductService {
         productDao.save(product);
     }
 
-    public void deleteProduct(Product product) {
-        productDao.delete(product);
+    public void deleteProduct(long productId) throws NoEntityFoundException {
+        Optional<Product> byId = productDao.findById(productId);
+
+        if (byId.isEmpty()) {
+            throw new NoEntityFoundException(productId);
+        }
+
+        productDao.delete(byId.get());
     }
 }
